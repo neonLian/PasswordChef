@@ -15,12 +15,9 @@ impl DuplicateIncrementer {
 }
 
 impl RecipeIncrementer for DuplicateIncrementer {
-    fn increment(&mut self) -> bool {
+    fn increment(&mut self, text_segments: &Vec<LocalStr>) -> bool {
         false
     }
-
-    fn reset(&mut self) {}
-
 
     fn output(&self, text_segments: &Vec<LocalStr>) -> SmallVec<[LocalStr; SV_SIZE]> {
         smallvec![text_segments[self.source_seg_idx].clone()]

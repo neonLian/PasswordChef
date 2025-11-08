@@ -37,7 +37,7 @@ impl CaseModifierIncrementer {
 }
 
 impl RecipeIncrementer for CaseModifierIncrementer {
-    fn increment(&mut self) -> bool {
+    fn increment(&mut self, text_segments: &Vec<LocalStr>) -> bool {
         self.cur_case += 1;
         let max_case = CaseModifierType::iter().len()-1;
         while (self.cur_case <= max_case && !self.modifiers.includes_case(CaseModifierType::iter().nth(self.cur_case).unwrap())) {
@@ -46,7 +46,7 @@ impl RecipeIncrementer for CaseModifierIncrementer {
         self.cur_case <= max_case
     }
 
-    fn reset(&mut self) {
+    fn reset(&mut self, text_segments: &Vec<LocalStr>) {
         self.cur_case = self.start_case;
     }
 

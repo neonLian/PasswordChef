@@ -84,7 +84,7 @@ impl MaskIncrementer {
 }
 
 impl RecipeIncrementer for MaskIncrementer {
-    fn increment(&mut self) -> bool {
+    fn increment(&mut self, text_segments: &Vec<LocalStr>) -> bool {
         for i in (0..self.char_idx.len()).rev() {
             self.char_idx[i] += 1;
 
@@ -93,8 +93,6 @@ impl RecipeIncrementer for MaskIncrementer {
         }
         false
     }
-
-    fn reset(&mut self) {}
 
     fn output(&self, text_segments: &Vec<LocalStr>) -> SmallVec<[LocalStr; SV_SIZE]> {
         smallvec![String::from_utf8(

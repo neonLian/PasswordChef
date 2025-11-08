@@ -10,6 +10,7 @@ use itertools::Itertools;
 use smallvec::{smallvec, SmallVec};
 use RecipeStep::*;
 use crate::items::case_modifier::CaseModifierIncrementer;
+use crate::items::concat::ConcatIncrementer;
 use crate::recipe_step::*;
 use crate::items::incrementer_trait::RecipeIncrementer;
 use crate::items::wordlist::WordlistIncrementer;
@@ -18,6 +19,7 @@ use crate::items::duplicate::DuplicateIncrementer;
 use crate::items::mask::MaskIncrementer;
 use crate::items::optional_modifier::OptionalModifierIncrementer;
 use crate::items::rearrange::RearrangeIncrementer;
+use crate::items::replace::ReplaceIncrementer;
 
 pub const SV_SIZE: usize = 4;
 
@@ -77,10 +79,24 @@ impl CandidateGenerator {
                         .flat_map(|tag| Self::tag_to_seg_indices(tag, &fields))
                         .collect();
                     Self::add_multimod_incrementer(
-                        RearrangeIncrementer::new(source_seg_indices.clone()), 
-                        &source_seg_indices, 
+                        RearrangeIncrementer::new(source_seg_indices.clone()),
+                        &source_seg_indices,
                         &mut fields
                     )
+                }
+                ReplaceChar { target_id, replacements, attr, modifiers } => {
+                    let target_seg = id_to_seg_idx(&target_id);
+                    Self::remove_seg_from_output(target_seg, &mut fields);
+                    Self::add_inc(ReplaceIncrementer::new(target_seg, replacements), attr, modifiers, step_id_idx, &mut fields);
+                }
+                Concat { target_list, attr, modifiers } => {
+                    let source_seg_indices: Vec<SegIndex> = target_list.iter()
+                        .flat_map(|tag| Self::tag_to_seg_indices(tag, &fields))
+                        .collect();
+                    for source_seg in &source_seg_indices {
+                        Self::remove_seg_from_output(*source_seg, &mut fields);
+                    }
+                    Self::add_inc(ConcatIncrementer::new(source_seg_indices), attr, modifiers, step_id_idx, &mut fields)
                 }
                 _ => {}
             }
@@ -195,6 +211,11 @@ impl CandidateGenerator {
             // Update IDs and classes
             Self::replace_tags_for_segs(&vec![source_seg_idx], &vec![new_seg_idx], fields);
         }
+        
+        // Hidden modifier
+        if modifiers.hidden {
+            Self::remove_seg_from_output(source_seg_idx, fields);
+        }
     }
 
     fn remove_seg_from_output(mut source_seg_idx: SegIndex, fields: &mut CandidateGeneratorFields) {
@@ -237,10 +258,10 @@ impl CandidateGenerator {
 
     fn increment(&mut self) -> bool {
         for inc in self.incrementers.iter_mut().rev() {
-            let inc_success = inc.increment();
+            let inc_success = inc.increment(&self.text_segments);
 
             if inc_success { return true; }
-            else { inc.reset(); }
+            else { inc.reset(&self.text_segments); }
         }
         false
     }

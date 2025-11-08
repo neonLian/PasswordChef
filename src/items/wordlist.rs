@@ -20,13 +20,13 @@ impl WordlistIncrementer {
             current_value: local_str!(""),
             current_val_string: String::new()
         };
-        item.increment();
+        item.increment(&vec![]);
         item
     }
 }
 
 impl RecipeIncrementer for WordlistIncrementer {
-    fn increment(&mut self) -> bool {
+    fn increment(&mut self, text_segments: &Vec<LocalStr>) -> bool {
         self.current_val_string.clear();
         let result = self.reader.read_line(&mut self.current_val_string);
         self.current_val_string.trim_in_place();
@@ -34,9 +34,9 @@ impl RecipeIncrementer for WordlistIncrementer {
         result.is_ok_and(|n| n > 0)
     }
 
-    fn reset(&mut self) {
+    fn reset(&mut self, text_segments: &Vec<LocalStr>) {
         self.reader.rewind().unwrap();
-        self.increment();
+        self.increment(&vec![]);
     }
     fn output(&self, text_segments: &Vec<LocalStr>) -> SmallVec<[LocalStr; SV_SIZE]> {
         smallvec![self.current_value.clone()]

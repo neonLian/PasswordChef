@@ -22,7 +22,7 @@ impl RearrangeIncrementer {
 }
 
 impl RecipeIncrementer for RearrangeIncrementer {
-    fn increment(&mut self) -> bool {
+    fn increment(&mut self, text_segments: &Vec<LocalStr>) -> bool {
         if let Some(p) = self.permute_iter.next() {
             self.current_permutation = p;
             true
@@ -30,7 +30,7 @@ impl RecipeIncrementer for RearrangeIncrementer {
         else { false }
     }
 
-    fn reset(&mut self) {
+    fn reset(&mut self, text_segments: &Vec<LocalStr>) {
         let n = self.source_id_indices.len();
         self.permute_iter = (0..n).permutations(n);
         self.current_permutation = self.permute_iter.next().unwrap();

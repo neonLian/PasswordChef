@@ -19,7 +19,7 @@ impl OptionalModifierIncrementer {
 }
 
 impl RecipeIncrementer for OptionalModifierIncrementer {
-    fn increment(&mut self) -> bool {
+    fn increment(&mut self, text_segments: &Vec<LocalStr>) -> bool {
         if (self.current_include) {
             self.current_include = false;
             true
@@ -28,7 +28,7 @@ impl RecipeIncrementer for OptionalModifierIncrementer {
         }
     }
 
-    fn reset(&mut self) {
+    fn reset(&mut self, text_segments: &Vec<LocalStr>) {
         self.current_include = true;
     }
 

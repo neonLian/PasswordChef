@@ -36,7 +36,7 @@ impl RecipeParser {
         let remainder = remainder.trim();
 
         let step_type: &str = first_token
-            .split_once(['+', '?', '#', '.', '['])
+            .split_once(['+', '?', '#', '.', '[', '^'])
             .map(|(a, b)| a)
             .unwrap_or(first_token);
 
@@ -63,6 +63,7 @@ impl RecipeParser {
                     if modifier_chars.contains('o') { modifiers.case.originalcase = true }
                     if modifier_chars.contains('t') { modifiers.case.titlecase = true }
                 }
+                AttributeToken::Hidden => { modifiers.hidden = true }
             } }
         }
 
@@ -74,6 +75,16 @@ impl RecipeParser {
             "d" | "dup" | "duplicate" => Ok(RecipeStep::Duplicate { target_id: remainder.to_owned(), attr, modifiers }),
             "l" | "loc" | "location" => Ok(RecipeStep::Location { attr }),
             "r" | "rearr" | "rearrange" => Ok(RecipeStep::Rearrange { target_list: remainder.split_whitespace().map(|s| s.trim().to_owned()).collect() }),
+            "cc" | "concat" => Ok(RecipeStep::Concat { target_list: remainder.split_whitespace().map(|s| s.trim().to_owned()).collect(), attr, modifiers }),
+            "rep" | "replace" => {
+                let remaining_tokens: Vec<String> = remainder.split_whitespace().map(|s| s.trim().to_owned()).collect();
+                let target_id = remaining_tokens[0].clone();
+                let mut repl_chars: Vec<(char, char)> = Vec::new();
+                for repl_str in &remaining_tokens[1..] {
+                    repl_chars.push((repl_str.chars().nth(0).unwrap(), repl_str.chars().nth(1).unwrap()));
+                }
+                Ok(RecipeStep::ReplaceChar { target_id, replacements: repl_chars, attr, modifiers })
+            }
             "sp" | "space" => Ok(RecipeStep::Constant { value: " ".to_owned(), attr, modifiers }),
             _ => Err(RecipeParseError)
         }
@@ -90,7 +101,9 @@ enum AttributeToken {
     #[regex(r"\+[ulot]+")]
     Modifiers,
     #[token("?")]
-    Optional
+    Optional,
+    #[token("^")]
+    Hidden
 }
 
 #[derive(Debug, Clone)]

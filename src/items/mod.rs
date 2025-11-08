@@ -6,3 +6,5 @@ pub mod optional_modifier;
 pub mod duplicate;
 pub mod mask;
 pub mod rearrange;
+pub mod replace;
+pub mod concat;

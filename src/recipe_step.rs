@@ -18,7 +18,10 @@ pub enum RecipeStep {
     Location { attr: CommonAttributes },
 
     // Operation
-    Rearrange { target_list: Vec<StepID> }
+    Rearrange { target_list: Vec<StepID> },
+    Concat { target_list: Vec<StepID>, attr: CommonAttributes, modifiers: GeneratorModifiers },
+    
+    ReplaceChar { target_id: StepID, replacements: Vec<(char, char)>, attr: CommonAttributes, modifiers: GeneratorModifiers }
 }
 
 #[derive(Default, Debug)]
@@ -60,7 +63,8 @@ impl CaseModifiers {
 #[derive(Debug, PartialEq)]
 pub struct GeneratorModifiers {
     pub case: CaseModifiers,
-    pub optional: bool
+    pub optional: bool,
+    pub hidden: bool
 }
 
 impl Default for GeneratorModifiers {
@@ -68,6 +72,7 @@ impl Default for GeneratorModifiers {
         GeneratorModifiers {
             case: CaseModifiers::default(),
             optional: false,
+            hidden: false
         }
     }
 }
